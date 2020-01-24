@@ -15,6 +15,8 @@ tags:
   - Web Development
   - Testing
 ---
+![check box image](/media/ths7adeebulbxhk3pp6z.gif "Are Your Unit Tests Failing for the Expected Reasons?")
+
 Unit tests can be an invaluable tool in the developers toolbox. You don't need to be a strict TDD purist to make unit testing worthwhile. Once you get into the flow of writing tests, it can be rather satisfying to watch the Nyan Cat Reporter go across your screen as the number of tests passing increase.
 
 As with any other tool though, it can be misused, and not always provide the benefit that you want or expect.
