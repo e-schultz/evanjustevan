@@ -1,80 +1,215 @@
 ---
-title: Humane Typography in the Digital Age
-date: "2017-08-19T22:40:32.169Z"
-template: "post"
+template: post
+title: Are Your Unit Tests Failing for the Expected Reasons?
+slug: are-your-unit-tests-failing-for-the-expected-reasons-4n26
 draft: false
-slug: "humane-typography-in-the-digital-age"
-category: "Typography"
+date: 2020-01-01T23:40:00.000Z
+description: >-
+  Unit tests can be an invaluable tool in the developers toolbox. You don't need
+  to be a strict TDD purist to make unit testing worthwhile. Once you get into
+  the flow of writing tests, it can be rather satisfying to watch the Nyan Cat
+  Reporter go across your screen as the number of tests passing increase
+category: JavaScript
 tags:
-  - "Design"
-  - "Typography"
-  - "Web Development"
-description: "An Essay on Typography by Eric Gill takes the reader back to the year 1930. The year when a conflict between two worlds came to its term. The machines of the industrial world finally took over the handicrafts."
-socialImage: "/media/42-line-bible.jpg"
+  - JavaScript
+  - Web Development
+  - Testing
 ---
+Unit tests can be an invaluable tool in the developers toolbox. You don't need to be a strict TDD purist to make unit testing worthwhile. Once you get into the flow of writing tests, it can be rather satisfying to watch the Nyan Cat Reporter go across your screen as the number of tests passing increase.
 
-- [The first transition](#the-first-transition)
-- [The digital age](#the-digital-age)
-- [Loss of humanity through transitions](#loss-of-humanity-through-transitions)
-- [Chasing perfection](#chasing-perfection)
+As with any other tool though, it can be misused, and not always provide the benefit that you want or expect.
 
-An Essay on Typography by Eric Gill takes the reader back to the year 1930. The year when a conflict between two worlds came to its term. The machines of the industrial world finally took over the handicrafts.
+The other day I was doing some code clean up, and came across a test that started to make me ask questions instead of having them answered.
 
-The typography of this industrial age was no longer handcrafted. Mass production and profit became more important. Quantity mattered more than the quality. The books and printed works in general lost a part of its humanity. The typefaces were not produced by craftsmen anymore. It was the machines printing and tying the books together now. The craftsmen had to let go of their craft and became a cog in the process. An extension of the industrial machine.
+Some of the questions that a unit test should be answering:
 
-But the victory of the industrialism didn’t mean that the craftsmen were completely extinct. The two worlds continued to coexist independently. Each recognising the good in the other — the power of industrialism and the humanity of craftsmanship. This was the second transition that would strip typography of a part of its humanity. We have to go 500 years back in time to meet the first one.
+* What is it testing?
+* What is it doing?
+* What is expected behavior?
+* What is the actual behavior?
+* Does it pass or fail for the expected reasons?
 
-## The first transition
+The test that made me go 'hrmm?' looked something like this:
 
-A similar conflict emerged after the invention of the first printing press in Europe. Johannes Gutenberg invented movable type and used it to produce different compositions. His workshop could print up to 240 impressions per hour. Until then, the books were being copied by hand. All the books were handwritten and decorated with hand drawn ornaments and figures. A process of copying a book was long but each book, even a copy, was a work of art.
+```javascript
+/// .... mock removed for now
 
-The first printed books were, at first, perceived as inferior to the handwritten ones. They were smaller and cheaper to produce. Movable type provided the printers with flexibility that allowed them to print books in languages other than Latin. Gill describes the transition to industrialism as something that people needed and wanted. Something similar happened after the first printed books emerged. People wanted books in a language they understood and they wanted books they could take with them. They were hungry for knowledge and printed books satisfied this hunger.
+it('should call /location/calculate-distance correctly', () =>
+   locationApi.calculateDistance(10,20,30,40).then(res => {
+     expect(res.distance).to.equal('ok');
+   })
+ );
+```
 
-![42-line-bible.jpg](/media/42-line-bible.jpg)
+Reading this unit test, it's not really clear what is actually being tested. The it block is saying that it should call `/location/calculate-distance` correctly, but the expect at the bottom is looking at the response.
 
-*The 42–Line Bible, printed by Gutenberg.*
+Currently this test is passing, but it's not passing for a reason that the test states it should be. Yes, there is something responding, but response.distance being ok has nothing to do with the behavior we wanting to verify.
 
-But, through this transition, the book lost a large part of its humanity. The machine took over most of the process but craftsmanship was still a part of it. The typefaces were cut manually by the first punch cutters. The paper was made by hand. The illustrations and ornaments were still being hand drawn. These were the remains of the craftsmanship that went almost extinct in the times of Eric Gill.
+This application was using [ismorphic-fetch](https://github.com/matthew-andrews/isomorphic-fetch) and [fetch-mock](https://www.npmjs.com/package/fetch-mock) to mock out HTTP requests. The mock for this test looks like:
 
-## The digital age
+```javascript
+before(() => {
+  fetchMock
+  .mock(
+    (url, options) =>
+      url === [
+        LOCATION_ENDPOINT,
+        'calculate-distance?&lat1=10&long1=20&lat2=30&long2=40',
+      ].join('/')
+      && options.method === 'GET',
+    {
+      body: JSON.stringify({ distance: 'ok' }),
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }
+  );
+});
+```
 
-The first transition took away a large part of humanity from written communication. Industrialisation, the second transition described by Eric Gill, took away most of what was left. But it’s the third transition that stripped it naked. Typefaces are faceless these days. They’re just fonts on our computers. Hardly anyone knows their stories. Hardly anyone cares. Flicking through thousands of typefaces and finding the “right one” is a matter of minutes.
+This starts to give a bit more insight, and after digging around that was going on in `locationApi.calculateDistance` - it seems like this test is wanting to verify that for a given set of parameters, the URL is formed up correctly to query the API to calculate the distance.
 
-> In the new computer age the proliferation of typefaces and type manipulations represents a new level of visual pollution threatening our culture. Out of thousands of typefaces, all we need are a few basic ones, and trash the rest.
->
-— Massimo Vignelli
+When the test runs, it currently passes. If it fails though, am I getting useful information? If I tweak the location code in how it forms the URL, the errors that get reported look like:
 
-Typography is not about typefaces. It’s not about what looks best, it’s about what feels right. What communicates the message best. Typography, in its essence, is about the message. “Typographical design should perform optically what the speaker creates through voice and gesture of his thoughts.”, as El Lissitzky, a famous Russian typographer, put it.
+```shell
+1) api/location should call /location/calculate-distance correctly:
+     Error: only absolute urls are supported
+      at node_modules/node-fetch/index.js:54:10
+      at new Fetch (node_modules/node-fetch/index.js:49:9)
+      at Fetch (node_modules/node-fetch/index.js:37:10)
+      at module.exports (node_modules/isomorphic-fetch/fetch-npm-node.js:8:19)
+      at FetchMock.fetchMock (node_modules/fetch-mock/src/fetch-mock.js:265:17)
+      at exports.default (src/api/helpers/composer-request.js:14:12)
+      at Object.exports.getTaxEstimate (src/api/location-api.js:8:10)
+      at Context.<anonymous> (src/api/location-api.test.js:27:13)
+```
 
-## Loss of humanity through transitions
+And hidden away at the top of the unit tests running and easy to miss, is:
 
-Each transition took away a part of humanity from written language. Handwritten books being the most humane form and the digital typefaces being the least. Overuse of Helvetica is a good example. Messages are being told in a typeface just because it’s a safe option. It’s always there. Everyone knows it but yet, nobody knows it. Stop someone on the street and ask him what Helvetica is? Ask a designer the same question. Ask him where it came from, when, why and who designed it. Most of them will fail to answer these questions. Most of them used it in their precious projects but they still don’t spot it in the street.
+```shell
+api/location
+unmatched call to /location!calculate-distance?lat1=10&long1=20&lat2=30&long2=40
+```
 
-<figure>
-	<blockquote>
-		<p>Knowledge of the quality of a typeface is of the greatest importance for the functional, aesthetic and psychological effect.</p>
-		<footer>
-			<cite>— Josef Mueller-Brockmann</cite>
-		</footer>
-	</blockquote>
-</figure>
+This isn't terribly useful information. The error that is getting reported doesn't tell me anything about what the expected and actual results were.
 
-Typefaces don’t look handmade these days. And that’s all right. They don’t have to. Industrialism took that away from them and we’re fine with it. We’ve traded that part of humanity for a process that produces more books that are easier to read. That can’t be bad. And it isn’t.
+> Error: only absolute urls are supported
 
-> Humane typography will often be comparatively rough and even uncouth; but while a certain uncouthness does not seriously matter in humane works, uncouthness has no excuse whatever in the productions of the machine.
->
-> — Eric Gill
+This is an error thrown by fetch-mock before our expect statements have even been hit. There is a hint at the top of the unit test reports where fetch-mock will complain about an unmatched call.
 
-We’ve come close to “perfection” in the last five centuries. The letters are crisp and without rough edges. We print our compositions with high–precision printers on a high quality, machine made paper.
+This message is easy to miss, and it also requires the person reading the unit test results to understand a bit of how fetch-mock works get pointed in the right direction.
 
-![type-through-time.jpg](/media/type-through-time.jpg)
+For a seemingly simple unit test, it asks more questions than it answers.
 
-*Type through 5 centuries.*
+A more accurate description of this test would be:
 
-We lost a part of ourselves because of this chase after perfection. We forgot about the craftsmanship along the way. And the worst part is that we don’t care. The transition to the digital age made that clear. We choose typefaces like clueless zombies. There’s no meaning in our work. Type sizes, leading, margins… It’s all just a few clicks or lines of code. The message isn’t important anymore. There’s no more “why” behind the “what”.
+```javascript
+describe('fetch-mock behavior', () => {
+  it('should return the object I told it to if no error is thrown', () => {
 
-## Chasing perfection
+  });
+});
+```
 
-Human beings aren’t perfect. Perfection is something that will always elude us. There will always be a small part of humanity in everything we do. No matter how small that part, we should make sure that it transcends the limits of the medium. We have to think about the message first. What typeface should we use and why? Does the typeface match the message and what we want to communicate with it? What will be the leading and why? Will there be more typefaces in our design? On what ground will they be combined? What makes our design unique and why? This is the part of humanity that is left in typography. It might be the last part. Are we really going to give it up?
+If we were the authors of [fetch-mock](https://www.npmjs.com/package/fetch-mock), that could possibly be a useful test. But, we are wanting to write unit tests for the system we are building, not for the mocking frameworks we are using.
 
-*Originally published by [Matej Latin](http://matejlatin.co.uk/) on [Medium](https://medium.com/design-notes/humane-typography-in-the-digital-age-9bd5c16199bd?ref=webdesignernews.com#.lygo82z0x).*
+The fact that `expect(res.distance).to.equal('ok');` is more of a coincidence than the behavior you want to test.
+
+What can we do to make it clear what the intended purpose of this test is, and that it provides meaningful errors when it fails?
+
+Let's revisit the questions we asked at the start, and clean up the test to start answering them.
+
+## What is it testing?
+
+When the `calculateDistance` is called, then an API is called with a specific URL and query parameters. The response object is inconsequential here. Let's adjust the unit test to start being more descriptive and accurate.
+
+```javascript
+it('should call calculate-distance with correct query parameters', () => {  
+  //
+});
+```
+
+The 'it' sentence starts to describe what we are doing without needing to read the test body.
+
+## What is it doing?
+
+The initial test wasn't that bad at answering this one, it's calling the `locationApi.calculateDistance`,
+
+```javascript
+it('should call calculate-distance with correct query parameters', () => {  
+  return locationApi
+  .calculateDistance(10,20,30,40)
+  .then(() => {
+    // ..
+  });
+});
+```
+
+## What is the expected / actual behavior
+
+This is where the previous test started to fail at answering these questions. 
+
+We don't care if the response object has a distance of 'ok', we want to verify the URL that is being hit.
+
+In answering this question, we can state what the expected and actual results are.
+
+```javascript
+it('should call calculate-distance with correct query parameters', () => {  
+  const EXPECTED_URL = `${LOCATION_ENDPOINT}/calculate-distance?lat1=10&long1=20&lat2=30&long2=40`;
+  return locationApi
+  .calculateDistance(10,20,30,40)
+  .then(() => {
+    const ACTUAL_URL = fetchMock.lastUrl();
+    expect(EXPECTED_URL).to.equal(ACTUAL_URL);
+  });
+});
+```
+
+Now when reading the unit test, the expected reasons for passing/failing are more obvious. The thing that I am asserting is reflective of the behavior that I want.
+
+However, if the test fails, the output still isn't very useful and still complains about: `Error: only absolute urls are supported`
+
+This leads to answering the final question:
+
+## Does it pass or fail for the expected reasons?
+
+Currently fetch-mock is throwing an error before we even hit our expect statement, so we can't guarantee that things are passing or failing for the reasons we expect.
+
+Adjusting our mock is pretty straightforward. Instead of having the mock be very specific for a URL, I am adjusting it to match just about anything that begins with a slash.
+
+```javascript
+before(() =>fetchMock.mock(`^/`,
+   { body: JSON.stringify({ data: 'ok' }),
+     status: 200,
+     headers: { 'content-type': 'application/json' },
+   }));
+```
+
+When we run our test and if it fails, the error that gets reported is now:
+
+```shell
+1) should call calculate-distance with correct query parameters:
+
+      AssertionError: expected '/location!calculate-distance?lat1=10&long1=20&lat2=30&long2=40' to equal '/location/calculate-distance?lat1=10&long1=20&lat2=30&long2=40'
+      + expected - actual
+
+      -/location!calculate-distance?lat1=10&long1=20&lat2=30&long2=40
+      +/location!calculate-distance?lat1=10&long1=20&lat2=30&long2=40
+
+      at src/api/location-api.test.js:21:29
+      at process._tickCallback (internal/process/next_tick.js:103:7)
+```
+
+With a few minor changes to the unit test and the mock, the test is starting to answer questions, instead of making us ask them.
+
+* The mock has been simplified and is easier to understand.
+* The expect statement makes it clear the behavior that we are testing.
+* The test fails for the correct reason - actual does not meet expected behavior.
+* When the test fails, it is descriptive to what the error is.
+
+Next time you're writing a unit test or reviewing others, maybe double check to ensure that they are passing or failing for the reasons that you expect.
+
+If reading a unit test makes you ask questions, then it could be a sign that you need to clean them up to make them more useful.
+
+- - -
+
+*initially posted on the [rangle.io blog](https://rangle.io/blog/are-your-unit-tests-failing-for-the-expected-reasons)*
