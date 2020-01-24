@@ -14,8 +14,10 @@ tags:
   - JavaScript
   - Web Development
   - Testing
+socialImage: '/media/ths7adeebulbxhk3pp6z.gif'
 ---
-![check box image](/media/ths7adeebulbxhk3pp6z.gif "Are Your Unit Tests Failing for the Expected Reasons?")
+
+![check box image](/media/ths7adeebulbxhk3pp6z.gif 'Are Your Unit Tests Failing for the Expected Reasons?')
 
 Unit tests can be an invaluable tool in the developers toolbox. You don't need to be a strict TDD purist to make unit testing worthwhile. Once you get into the flow of writing tests, it can be rather satisfying to watch the Nyan Cat Reporter go across your screen as the number of tests passing increase.
 
@@ -25,11 +27,11 @@ The other day I was doing some code clean up, and came across a test that starte
 
 Some of the questions that a unit test should be answering:
 
-* What is it testing?
-* What is it doing?
-* What is expected behavior?
-* What is the actual behavior?
-* Does it pass or fail for the expected reasons?
+- What is it testing?
+- What is it doing?
+- What is expected behavior?
+- What is the actual behavior?
+- Does it pass or fail for the expected reasons?
 
 The test that made me go 'hrmm?' looked something like this:
 
@@ -37,10 +39,9 @@ The test that made me go 'hrmm?' looked something like this:
 /// .... mock removed for now
 
 it('should call /location/calculate-distance correctly', () =>
-   locationApi.calculateDistance(10,20,30,40).then(res => {
-     expect(res.distance).to.equal('ok');
-   })
- );
+  locationApi.calculateDistance(10, 20, 30, 40).then(res => {
+    expect(res.distance).to.equal('ok');
+  }));
 ```
 
 Reading this unit test, it's not really clear what is actually being tested. The it block is saying that it should call `/location/calculate-distance` correctly, but the expect at the bottom is looking at the response.
@@ -51,18 +52,17 @@ This application was using [ismorphic-fetch](https://github.com/matthew-andrews/
 
 ```javascript
 before(() => {
-  fetchMock
-  .mock(
+  fetchMock.mock(
     (url, options) =>
-      url === [
-        LOCATION_ENDPOINT,
-        'calculate-distance?&lat1=10&long1=20&lat2=30&long2=40',
-      ].join('/')
-      && options.method === 'GET',
+      url ===
+        [
+          LOCATION_ENDPOINT,
+          'calculate-distance?&lat1=10&long1=20&lat2=30&long2=40'
+        ].join('/') && options.method === 'GET',
     {
       body: JSON.stringify({ distance: 'ok' }),
       status: 200,
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json' }
     }
   );
 });
@@ -106,9 +106,7 @@ A more accurate description of this test would be:
 
 ```javascript
 describe('fetch-mock behavior', () => {
-  it('should return the object I told it to if no error is thrown', () => {
-
-  });
+  it('should return the object I told it to if no error is thrown', () => {});
 });
 ```
 
@@ -125,7 +123,7 @@ Let's revisit the questions we asked at the start, and clean up the test to star
 When the `calculateDistance` is called, then an API is called with a specific URL and query parameters. The response object is inconsequential here. Let's adjust the unit test to start being more descriptive and accurate.
 
 ```javascript
-it('should call calculate-distance with correct query parameters', () => {  
+it('should call calculate-distance with correct query parameters', () => {
   //
 });
 ```
@@ -137,10 +135,8 @@ The 'it' sentence starts to describe what we are doing without needing to read t
 The initial test wasn't that bad at answering this one, it's calling the `locationApi.calculateDistance`,
 
 ```javascript
-it('should call calculate-distance with correct query parameters', () => {  
-  return locationApi
-  .calculateDistance(10,20,30,40)
-  .then(() => {
+it('should call calculate-distance with correct query parameters', () => {
+  return locationApi.calculateDistance(10, 20, 30, 40).then(() => {
     // ..
   });
 });
@@ -148,18 +144,16 @@ it('should call calculate-distance with correct query parameters', () => {
 
 ## What is the expected / actual behavior
 
-This is where the previous test started to fail at answering these questions. 
+This is where the previous test started to fail at answering these questions.
 
 We don't care if the response object has a distance of 'ok', we want to verify the URL that is being hit.
 
 In answering this question, we can state what the expected and actual results are.
 
 ```javascript
-it('should call calculate-distance with correct query parameters', () => {  
+it('should call calculate-distance with correct query parameters', () => {
   const EXPECTED_URL = `${LOCATION_ENDPOINT}/calculate-distance?lat1=10&long1=20&lat2=30&long2=40`;
-  return locationApi
-  .calculateDistance(10,20,30,40)
-  .then(() => {
+  return locationApi.calculateDistance(10, 20, 30, 40).then(() => {
     const ACTUAL_URL = fetchMock.lastUrl();
     expect(EXPECTED_URL).to.equal(ACTUAL_URL);
   });
@@ -179,11 +173,13 @@ Currently fetch-mock is throwing an error before we even hit our expect statemen
 Adjusting our mock is pretty straightforward. Instead of having the mock be very specific for a URL, I am adjusting it to match just about anything that begins with a slash.
 
 ```javascript
-before(() =>fetchMock.mock(`^/`,
-   { body: JSON.stringify({ data: 'ok' }),
-     status: 200,
-     headers: { 'content-type': 'application/json' },
-   }));
+before(() =>
+  fetchMock.mock(`^/`, {
+    body: JSON.stringify({ data: 'ok' }),
+    status: 200,
+    headers: { 'content-type': 'application/json' }
+  })
+);
 ```
 
 When we run our test and if it fails, the error that gets reported is now:
@@ -203,15 +199,15 @@ When we run our test and if it fails, the error that gets reported is now:
 
 With a few minor changes to the unit test and the mock, the test is starting to answer questions, instead of making us ask them.
 
-* The mock has been simplified and is easier to understand.
-* The expect statement makes it clear the behavior that we are testing.
-* The test fails for the correct reason - actual does not meet expected behavior.
-* When the test fails, it is descriptive to what the error is.
+- The mock has been simplified and is easier to understand.
+- The expect statement makes it clear the behavior that we are testing.
+- The test fails for the correct reason - actual does not meet expected behavior.
+- When the test fails, it is descriptive to what the error is.
 
 Next time you're writing a unit test or reviewing others, maybe double check to ensure that they are passing or failing for the reasons that you expect.
 
 If reading a unit test makes you ask questions, then it could be a sign that you need to clean them up to make them more useful.
 
-- - -
+---
 
-*initially posted on the [rangle.io blog](https://rangle.io/blog/are-your-unit-tests-failing-for-the-expected-reasons)*
+_initially posted on the [rangle.io blog](https://rangle.io/blog/are-your-unit-tests-failing-for-the-expected-reasons)_
