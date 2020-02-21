@@ -2,7 +2,7 @@
 template: post
 title: Improving your mental model of useEffect
 slug: improving-your-mental-model-of-useeffect
-draft: true
+draft: false
 date: 2019-08-20T16:49:00.000Z
 description: Improving your mental model of useEffect
 socialImage: /media/useeffect_desktop_16_9.png
