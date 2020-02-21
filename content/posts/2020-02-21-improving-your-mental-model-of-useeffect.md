@@ -9,16 +9,19 @@ socialImage: /media/useeffect_desktop_16_9.png
 category: Development
 tags:
   - react
+  - JavaScript
+  - Web Development
 ---
-![gears turning ](/media/useeffect_desktop_16_9.png "Improving your mental model of useEffect")
+
+![gears turning ](/media/useeffect_desktop_16_9.png 'Improving your mental model of useEffect')
 
 Hooks landed in React a few months ago, and there has been a lot of excitement around them in terms of figuring out how to best use them, best practices, and how they map to current concepts in React and the lifecycle.
 
 Many React developers are familiar with the React Component lifeCycle, and hooks like:
 
-* [componentDidMount](https://reactjs.org/docs/react-component.html#componentdidmount)
-* [componentDidUpdate](https://reactjs.org/docs/react-component.html#componentdidupdate)
-* [shouldComponentUpdate](https://reactjs.org/docs/react-component.html#shouldcomponentupdate)
+- [componentDidMount](https://reactjs.org/docs/react-component.html#componentdidmount)
+- [componentDidUpdate](https://reactjs.org/docs/react-component.html#componentdidupdate)
+- [shouldComponentUpdate](https://reactjs.org/docs/react-component.html#shouldcomponentupdate)
 
 etc.
 
@@ -70,26 +73,26 @@ While the lifecycle hooks of `componentDidMount` and `componentDidUpdate` with c
 
 Before looking at how to handle this with `useEffect`, lets quickly review the [API of useEffect](https://reactjs.org/docs/hooks-reference.html#useeffect):
 
-* Accepts a function
-* If it returns a function, it will do cleanup when the component is unmounted
-* Has an optional 2nd argument to pass in the data it depends on
+- Accepts a function
+- If it returns a function, it will do cleanup when the component is unmounted
+- Has an optional 2nd argument to pass in the data it depends on
 
 One of the key things to keep in mind is the importance of that second argument, the [React Docs](https://reactjs.org/docs/hooks-effect.html) go into this in detail, but a summary is:
 
-* If we leave it blank - it will run on every single render.
-* If we pass in an empty array - it will execute only when the component mounts, and not on any updates
-* If we pass in a value - it will execute when any of those values change
-* If you are using the [react-hooks eslint plugin](https://www.npmjs.com/package/eslint-plugin-react-hooks) (and you should) - not providing the dependencies to your useEffect will give you warnings.
+- If we leave it blank - it will run on every single render.
+- If we pass in an empty array - it will execute only when the component mounts, and not on any updates
+- If we pass in a value - it will execute when any of those values change
+- If you are using the [react-hooks eslint plugin](https://www.npmjs.com/package/eslint-plugin-react-hooks) (and you should) - not providing the dependencies to your useEffect will give you warnings.
 
 ```jsx
-export default SomeComponent = ({id}) => {
+export default SomeComponent = ({ id }) => {
   let [results, setResults] = useState([]);
-  useEffect(()=>{
+  useEffect(() => {
     fetch(`/some/url/${id}`)
-      .then(r=>r.json())
-      .then(r=>setResults(r))
-  },[id])
-}
+      .then(r => r.json())
+      .then(r => setResults(r));
+  }, [id]);
+};
 ```
 
 In the class-based version, making API calls feels very imperative - when this method is called, I want to check if/how a value has changed, and if it has changed - I want to call a method.
@@ -105,36 +108,36 @@ The eslint plugin can guide you in the right direction, but the short version is
 To demonstrate this, let's add an extra query parameter to our search:
 
 ```jsx
-export default SomeComponent = ({id, filter}) => {
+export default SomeComponent = ({ id, filter }) => {
   let [results, setResults] = useState([]);
 
-  useEffect(()=>{
+  useEffect(() => {
     fetch(`/some/url/${id}?filter=${filter}`)
-      .then(r=>r.json())
-      .then(r=>setResults(r))
-  },[id])
-}
+      .then(r => r.json())
+      .then(r => setResults(r));
+  }, [id]);
+};
 ```
 
-Even though we have added filter to the fetch query string, we have not added it to the dependencies of `useEffect`. 
+Even though we have added filter to the fetch query string, we have not added it to the dependencies of `useEffect`.
 
 As we update the filter, we won't be calling the API on any of the other updates, and it will only run when the id has changed.
 
 Fixing this can be simple enough - add the filter to the list of dependencies for the `useEffect`.
 
 ```jsx
-export default SomeComponent = ({id, filter}) => {
+export default SomeComponent = ({ id, filter }) => {
   let [results, setResults] = useState([]);
 
-  useEffect(()=>{
+  useEffect(() => {
     fetch(`/some/url/${id}?filter=${filter}`)
-      .then(r=>r.json())
-      .then(r=>setResults(r))
-  },[id, filter])
-}
+      .then(r => r.json())
+      .then(r => setResults(r));
+  }, [id, filter]);
+};
 ```
 
-As you can see, to properly use `useEffect`, in this case, we don't care if the component is mounting, or updating, or where it is in the life cycle. 
+As you can see, to properly use `useEffect`, in this case, we don't care if the component is mounting, or updating, or where it is in the life cycle.
 
 What we do care about is what data does this effect depend on.
 
@@ -142,6 +145,6 @@ What we do care about is what data does this effect depend on.
 
 Hopefully, this post can help clarify things a little bit better, but if you are curious for a deeper dive, be sure to check out Dan Abramovs' post, [A Complete Guide to useEffect](https://overreacted.io/a-complete-guide-to-useeffect/)
 
-- - -
+---
 
-*this article was initially posted on the [rangle.io blog](https://rangle.io/blog/improving-your-mental-model-of-useeffect) and [medium](https://medium.com/rangle-io/improving-your-mental-model-of-useeffect-c27ea1e2a5a3)*
+_this article was initially posted on the [rangle.io blog](https://rangle.io/blog/improving-your-mental-model-of-useeffect) and [medium](https://medium.com/rangle-io/improving-your-mental-model-of-useeffect-c27ea1e2a5a3)_

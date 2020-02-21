@@ -9,7 +9,7 @@ description: >-
   to be a strict TDD purist to make unit testing worthwhile. Once you get into
   the flow of writing tests, it can be rather satisfying to watch the Nyan Cat
   Reporter go across your screen as the number of tests passing increase
-category: JavaScript
+category: Development
 tags:
   - JavaScript
   - Web Development
