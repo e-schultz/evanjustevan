@@ -10,6 +10,7 @@ category: Development
 tags:
   - react
 ---
+![gears turning ](/media/useeffect_desktop_16_9.png "Improving your mental model of useEffect")
 
 Hooks landed in React a few months ago, and there has been a lot of excitement around them in terms of figuring out how to best use them, best practices, and how they map to current concepts in React and the lifecycle.
 
