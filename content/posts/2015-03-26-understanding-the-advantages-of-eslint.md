@@ -8,7 +8,7 @@ description: Don't become a human linter, let the tools help you out
 socialImage: /media/es-lint-1.jpg
 category: Development
 tags:
-  - react
+  - ESLint
   - JavaScript
   - Web Development
 ---
