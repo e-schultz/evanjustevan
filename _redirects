@@ -1,6 +1,6 @@
 [[redirects]]
   from = "https://evanjustevan.com/just-evan/*"
-  to = "https://publish.obsidian.md/serve?url=evanjustevan.com.com/just-evan/:splat"
+  to = "https://publish.obsidian.md/serve?url=evanjustevan.com/just-evan/:splat"
   status = 200
   force = true
   
