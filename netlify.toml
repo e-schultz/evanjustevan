@@ -6,7 +6,7 @@
   YARN_FLAGS = "--no-ignore-optional"
 [[redirects]]
   from = "https://notes.evanjustevan.com/*"
-  to = "https://publish.obsidian.md/serve?url=evanjustevan.com/just-evan/:splat"
+  to = "https://publish.obsidian.md/serve?url=notes.evanjustevan.com/just-evan/:splat"
   status = 200
   force = true
   
