@@ -9,4 +9,9 @@
   to = "https://publish.obsidian.md/serve?url=notes.evanjustevan.com/just-evan/:splat"
   status = 200
   force = true
+[[redirects]]
+  from = "https://notes.evanjustevan.com/"
+  to = "https://publish.obsidian.md/serve?url=notes.evanjustevan.com/just-evan/%2B+Home"
+  status = 200
+  force = true
   
